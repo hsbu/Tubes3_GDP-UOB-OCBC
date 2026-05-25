@@ -1,0 +1,46 @@
+.judol-highlight {
+  background-color: #ffeb3b;
+  color: inherit;
+  display: inline;
+  border-radius: 2px;
+  padding: 0 1px;
+  cursor: default;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+#judol-tooltip {
+  display: none;
+  position: fixed;
+  z-index: 2147483647;
+  top: 0;
+  left: 0;
+  background: #ffffff;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-family: system-ui, sans-serif;
+  line-height: 1.6;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  pointer-events: none;
+  max-width: 240px;
+  white-space: nowrap;
+}
+
+#judol-tooltip strong {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #c62828;
+  margin-bottom: 2px;
+}
+
+#judol-tooltip div {
+  color: #424242;
+}
+
+.judol-blur {
+  filter: blur(6px);
+  transition: filter 0.2s ease;
+}
