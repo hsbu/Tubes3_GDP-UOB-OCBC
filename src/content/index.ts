@@ -11,14 +11,18 @@ async function init(): Promise<void> {
 }
 
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-    if (message.type === 'scan') {
+    if (message.type === 'START_SCAN') {
         runScan()
-            .then(() => sendResponse({ ok: true}))
+            .then(() => sendResponse({ ok: true }))
             .catch((err) => {
                 console.error('scan failed', err);
                 sendResponse({ ok: false, error: String(err) });
             });
         return true;
+    }
+
+    if (message.type === 'CLEAR') {
+        sendResponse({ ok: true });
     }
 });
 
