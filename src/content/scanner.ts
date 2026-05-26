@@ -10,13 +10,16 @@ import { levenshteinSearch } from '../algorithms/levenshtein';
 import { ahoCorasickSearch, precompute as acPrecompute } from '../algorithms/aho-corasick';
 import type { AhoCorasickNode } from '../algorithms/aho-corasick';
 import { rabinKarpMultiSearch } from '../algorithms/rabin-karp';
+import { rabinKarpSearch, precompute as rabinKarpPrecompute } from '../algorithms/rabin-karp';
+import type { RKPrecomputed } from '../algorithms/rabin-karp';
 import { walkTextNodes } from './dom-walker';
 import { clearHighlights, highlightNode } from './highlighter';
 import type { HighlightMatch } from './highlighter';
 
 let kmpTables = new Map<string, number[]>();
 let bmTables = new Map<string, Map<string, number>>();
-let acAutomation: AhoCorasickNode[] | null = null;
+let rkTables = new Map<string, RKPrecomputed>();
+let acAutomation: AhoCorasickNode[] = [];
 
 export async function initScanner(): Promise<void> {
     const keywords = await loadKeywords();
@@ -24,6 +27,7 @@ export async function initScanner(): Promise<void> {
     for (const keyword of keywords) {
         kmpTables.set(keyword, kmpPrecompute(keyword));
         bmTables.set(keyword, bmPrecompute(keyword));
+        rkTables.set(keyword, rabinKarpPrecompute(keyword));
     }
 
     acAutomation = acPrecompute(keywords);
@@ -70,6 +74,52 @@ export function runBM(text:string, keywords: string[]): { keyword: string; indic
         }
 
     })
+}
+
+export function runLevenshtein(text: string, keywords: string[]): { keyword: string; candidate: string; index: number; distance: number; similarity: number; comparisons: number }[] {
+    const { matches, comparisons } = levenshteinSearch(text, keywords);
+
+    if (matches.length === 0){
+        return [];
+    }
+    return matches.map((match) => ({keyword: match.keyword, candidate: match.candidate, index: match.index, distance: match.distance, similarity: match.similarity, comparisons}));
+}
+
+export function runAhoCorasick(text: string, keywords: string[]): { keyword: string; indices: number[]; comparisons: number }[] {
+    const automaton = acAutomation.length === 0 ? acPrecompute(keywords) : acAutomation;
+    const { matches, comparisons } = ahoCorasickSearch(text, keywords, automaton);
+    const grouped = new Map<string, number[]>();
+
+    for (const match of matches){
+        const existing = grouped.get(match.keyword);
+
+        if (existing === undefined){
+            grouped.set(match.keyword, [match.index]);
+        } else {
+            existing.push(match.index);
+        }
+    }
+
+    const results: { keyword: string; indices: number[]; comparisons: number }[] = [];
+
+    for (const [keyword, indices] of grouped.entries()){
+        results.push({keyword, indices, comparisons});
+    }
+    return results;
+}
+
+export function runRabinKarp(text: string, keywords: string[]): { keyword: string; indices: number[]; comparisons: number }[] {
+    const results: { keyword: string; indices: number[]; comparisons: number }[] = [];
+
+    for (const keyword of keywords) {
+        const table = rkTables.get(keyword);
+        const { indices, comparisons } = rabinKarpSearch(text, keyword, table);
+
+        if (indices.length > 0) {
+            results.push({keyword, indices, comparisons});
+        }
+    }
+    return results;
 }
 
 export async function runScan(): Promise<void> {
@@ -145,17 +195,20 @@ export async function runScan(): Promise<void> {
         }
 
         // 4. Levenshtein
-        if (ALGO_FLAGS.levenshtein) {
-            const timeStart = performance.now();
-            const { matches: lvMatches } = levenshteinSearch(text, keywords);
-            const timeElapsed = performance.now() - timeStart;
-            stats.levenshtein.ms += timeElapsed;
+        if (ALGO_FLAGS.levenshtein){
+            const fuzzyKeywords = keywords.filter((keyword) => !exactHits.has(keyword));
 
-            for (const lM of lvMatches) {
-                if (!exactHits.has(lM.keyword)) {
+            if (fuzzyKeywords.length > 0){
+                const timeStart = performance.now();
+                const levenshteinMatches = runLevenshtein(text, fuzzyKeywords);
+                const timeElapsed = performance.now() - timeStart;
+                stats.levenshtein.ms += timeElapsed;
+
+                for (const lM of levenshteinMatches){
                     stats.levenshtein.hits++;
-                    allResults.push({ keyword: lM.keyword, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed, nodeIndex });
-                    nodeHighlights.push({ start: lM.index, end: lM.index + lM.candidate.length, info: { keyword: lM.keyword, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed } });
+
+                    allResults.push({keyword: lM.keyword, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed, nodeIndex});
+                    nodeHighlights.push({start: lM.index, end: lM.index + lM.candidate.length, info: {keyword: `${lM.keyword} ≈ ${lM.candidate}`, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed}});
                 }
             }
         }
@@ -163,30 +216,38 @@ export async function runScan(): Promise<void> {
         // 5. Aho-Corasick
         if (ALGO_FLAGS.ahoCorasick) {
             const timeStart = performance.now();
-            const { matches: acMatches } = ahoCorasickSearch(upperText, keywords, acAutomation ?? undefined);
+            const ahoMatches = runAhoCorasick(upperText, keywords);
             const timeElapsed = performance.now() - timeStart;
             stats.ahoCorasick.ms += timeElapsed;
 
-            for (const aM of acMatches) {
+            for (const aM of ahoMatches){
                 exactHits.add(aM.keyword);
-                stats.ahoCorasick.hits++;
-                allResults.push({ keyword: aM.keyword, algorithm: 'aho-corasick', count: 1, executionMs: timeElapsed, nodeIndex });
-                nodeHighlights.push({ start: aM.index, end: aM.index + aM.keyword.length, info: { keyword: aM.keyword, algorithm: 'aho-corasick', count: 1, executionMs: timeElapsed } });
+                stats.ahoCorasick.hits += aM.indices.length;
+
+                allResults.push({keyword: aM.keyword, algorithm: 'aho-corasick', count: aM.indices.length, executionMs: timeElapsed, nodeIndex});
+
+                for (const index of aM.indices){
+                    nodeHighlights.push({start: index, end: index + aM.keyword.length, info: {keyword: aM.keyword, algorithm: 'aho-corasick', count: aM.indices.length, executionMs: timeElapsed}});
+                }
             }
         }
 
         // 6. Rabin-Karp
         if (ALGO_FLAGS.rabinKarp) {
             const timeStart = performance.now();
-            const { matches: rkMatches } = rabinKarpMultiSearch(upperText, keywords);
+            const rkMatches = runRabinKarp(upperText, keywords);
             const timeElapsed = performance.now() - timeStart;
             stats.rabinKarp.ms += timeElapsed;
 
             for (const rK of rkMatches) {
                 exactHits.add(rK.keyword);
-                stats.rabinKarp.hits++;
-                allResults.push({ keyword: rK.keyword, algorithm: 'rabin-karp', count: 1, executionMs: timeElapsed, nodeIndex });
-                nodeHighlights.push({ start: rK.index, end: rK.index + rK.keyword.length, info: { keyword: rK.keyword, algorithm: 'rabin-karp', count: 1, executionMs: timeElapsed } });
+                stats.rabinKarp.hits += rK.indices.length;
+
+                allResults.push({keyword: rK.keyword, algorithm: 'rabin-karp', count: rK.indices.length, executionMs: timeElapsed, nodeIndex});
+
+                for (const index of rK.indices) {
+                    nodeHighlights.push({start: index, end: index + rK.keyword.length, info: {keyword: rK.keyword, algorithm: 'rabin-karp', count: rK.indices.length, executionMs: timeElapsed}});
+                }
             }
         }
 
