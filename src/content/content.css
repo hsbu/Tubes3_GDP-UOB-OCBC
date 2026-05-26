@@ -44,3 +44,7 @@
   filter: blur(6px);
   transition: filter 0.2s ease;
 }
+
+.judol-blur:hover {
+  filter: blur(3px);
+}

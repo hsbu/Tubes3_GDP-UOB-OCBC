@@ -1,5 +1,5 @@
 import { loadKeywords, getKeywords } from '../shared/keywords';
-import { setState } from '../shared/storage';
+import { getState, setState } from '../shared/storage';
 import { ALGO_FLAGS } from '../shared/config';
 import type { MatchResult, AlgoStats } from '../shared/types';
 import { DEFAULT_ALGO_STATS } from '../shared/types';
@@ -15,6 +15,7 @@ import type { RKPrecomputed } from '../algorithms/rabin-karp';
 import { walkTextNodes } from './dom-walker';
 import { clearHighlights, highlightNode } from './highlighter';
 import type { HighlightMatch } from './highlighter';
+import { clearBlur, blurTextNodeTarget } from './blur';
 
 let kmpTables = new Map<string, number[]>();
 let bmTables = new Map<string, Map<string, number>>();
@@ -126,7 +127,9 @@ export async function runScan(): Promise<void> {
     await setState({ scanStatus: 'scanning', scanResults: [], algoStats: { ...DEFAULT_ALGO_STATS }});
 
     const keywords = getKeywords();
+    const { blurEnabled } = await getState();
     clearHighlights();
+    clearBlur();
 
     const textNodes = walkTextNodes();
     const allResults: MatchResult[] = [];
@@ -252,6 +255,9 @@ export async function runScan(): Promise<void> {
         }
 
         if (nodeHighlights.length > 0) {
+            if (blurEnabled) {
+                blurTextNodeTarget(node);
+            }
             highlightNode(node, nodeHighlights);
         }
 

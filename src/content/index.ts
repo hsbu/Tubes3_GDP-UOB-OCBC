@@ -2,6 +2,8 @@ import { loadKeywords } from '../shared/keywords';
 import { onStateChange } from '../shared/storage';
 import { initScanner, runScan } from './scanner';
 import { initTooltip } from './tooltip';
+import { clearHighlights } from './highlighter';
+import { clearBlur, setBlurVisibility } from './blur';
 
 
 async function init(): Promise<void> {
@@ -22,12 +24,16 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     }
 
     if (message.type === 'CLEAR') {
+        clearHighlights();
+        clearBlur();
         sendResponse({ ok: true });
     }
 });
 
-onStateChange((_changes) => {
-
+onStateChange((changes) => {
+    if (changes.blurEnabled !== undefined) {
+        setBlurVisibility(changes.blurEnabled);
+    }
 });
 
 init().catch((err) => console.error('init failed', err));
