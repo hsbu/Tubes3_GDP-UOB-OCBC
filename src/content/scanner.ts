@@ -6,12 +6,17 @@ import { DEFAULT_ALGO_STATS } from '../shared/types';
 import { kmpSearch, precompute as kmpPrecompute } from '../algorithms/kmp';
 import { bmSearch, precompute as bmPrecompute } from '../algorithms/boyer-moore';
 import { regexSearch } from '../algorithms/regex-match';
+import { levenshteinSearch } from '../algorithms/levenshtein';
+import { ahoCorasickSearch, precompute as acPrecompute } from '../algorithms/aho-corasick';
+import type { AhoCorasickNode } from '../algorithms/aho-corasick';
+import { rabinKarpMultiSearch } from '../algorithms/rabin-karp';
 import { walkTextNodes } from './dom-walker';
 import { clearHighlights, highlightNode } from './highlighter';
 import type { HighlightMatch } from './highlighter';
 
 let kmpTables = new Map<string, number[]>();
 let bmTables = new Map<string, Map<string, number>>();
+let acAutomation: AhoCorasickNode[] | null = null;
 
 export async function initScanner(): Promise<void> {
     const keywords = await loadKeywords();
@@ -20,6 +25,8 @@ export async function initScanner(): Promise<void> {
         kmpTables.set(keyword, kmpPrecompute(keyword));
         bmTables.set(keyword, bmPrecompute(keyword));
     }
+
+    acAutomation = acPrecompute(keywords);
 }
 
 export function runKMP(text:string, keywords: string[]): { keyword: string; indices: number[]; comparisons: number }[] {
@@ -137,7 +144,51 @@ export async function runScan(): Promise<void> {
             }
         }
 
-        // 4. Levenshtein TODO!
+        // 4. Levenshtein
+        if (ALGO_FLAGS.levenshtein) {
+            const timeStart = performance.now();
+            const { matches: lvMatches } = levenshteinSearch(text, keywords);
+            const timeElapsed = performance.now() - timeStart;
+            stats.levenshtein.ms += timeElapsed;
+
+            for (const lM of lvMatches) {
+                if (!exactHits.has(lM.keyword)) {
+                    stats.levenshtein.hits++;
+                    allResults.push({ keyword: lM.keyword, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed, nodeIndex });
+                    nodeHighlights.push({ start: lM.index, end: lM.index + lM.candidate.length, info: { keyword: lM.keyword, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed } });
+                }
+            }
+        }
+
+        // 5. Aho-Corasick
+        if (ALGO_FLAGS.ahoCorasick) {
+            const timeStart = performance.now();
+            const { matches: acMatches } = ahoCorasickSearch(upperText, keywords, acAutomation ?? undefined);
+            const timeElapsed = performance.now() - timeStart;
+            stats.ahoCorasick.ms += timeElapsed;
+
+            for (const aM of acMatches) {
+                exactHits.add(aM.keyword);
+                stats.ahoCorasick.hits++;
+                allResults.push({ keyword: aM.keyword, algorithm: 'aho-corasick', count: 1, executionMs: timeElapsed, nodeIndex });
+                nodeHighlights.push({ start: aM.index, end: aM.index + aM.keyword.length, info: { keyword: aM.keyword, algorithm: 'aho-corasick', count: 1, executionMs: timeElapsed } });
+            }
+        }
+
+        // 6. Rabin-Karp
+        if (ALGO_FLAGS.rabinKarp) {
+            const timeStart = performance.now();
+            const { matches: rkMatches } = rabinKarpMultiSearch(upperText, keywords);
+            const timeElapsed = performance.now() - timeStart;
+            stats.rabinKarp.ms += timeElapsed;
+
+            for (const rK of rkMatches) {
+                exactHits.add(rK.keyword);
+                stats.rabinKarp.hits++;
+                allResults.push({ keyword: rK.keyword, algorithm: 'rabin-karp', count: 1, executionMs: timeElapsed, nodeIndex });
+                nodeHighlights.push({ start: rK.index, end: rK.index + rK.keyword.length, info: { keyword: rK.keyword, algorithm: 'rabin-karp', count: 1, executionMs: timeElapsed } });
+            }
+        }
 
         if (nodeHighlights.length > 0) {
             highlightNode(node, nodeHighlights);

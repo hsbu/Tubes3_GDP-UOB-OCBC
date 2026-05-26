@@ -1,10 +1,10 @@
 // Made to help the development of feature without dependency to algorithm
 // Flag to True if implemented
 export const ALGO_FLAGS = {
-  kmp: false,
-  bm: false,
+  kmp: true,
+  bm: true,
   regex: true,
-  levenshtein: false,
-  ahoCorasick: false,
-  rabinKarp: false,
+  levenshtein: true,
+  ahoCorasick: true,
+  rabinKarp: true,
 } as const;
