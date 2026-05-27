@@ -2,7 +2,7 @@ export interface HighlightInfo {
   keyword: string;
   algorithm: string;
   count: number;
-  executionMs: number;
+  execMs: number;
 }
 
 export interface HighlightMatch {
