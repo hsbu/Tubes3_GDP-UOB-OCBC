@@ -44,11 +44,11 @@ function getBaseKeyword(displayKeyword: string): string {
     return idx >= 0 ? displayKeyword.slice(0, idx) : displayKeyword;
 }
 
-function buildAlgoBreakdown(displayKeyword: string): Map<string, number> {
+function buildAlgoBreakdown(displayKeyword: string, nodeIndex: number): Map<string, number> {
     const baseKeyword = getBaseKeyword(displayKeyword).toUpperCase();
     const breakdown = new Map<string, number>();
     for (const result of cachedResults) {
-        if (result.keyword.toUpperCase() === baseKeyword) {
+        if (result.keyword.toUpperCase() === baseKeyword && result.nodeIndex === nodeIndex) {
             breakdown.set(result.algorithm, (breakdown.get(result.algorithm) ?? 0) + result.count);
         }
     }
@@ -98,9 +98,10 @@ export function initTooltip(): void {
                 keyword: string;
                 algorithm: string;
                 count: number;
+                nodeIndex: number;
             };
 
-            const breakdown = buildAlgoBreakdown(info.keyword);
+            const breakdown = buildAlgoBreakdown(info.keyword, info.nodeIndex);
             const totalCount = breakdown.size > 0
                 ? [...breakdown.values()].reduce((sum, n) => sum + n, 0)
                 : info.count;

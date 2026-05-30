@@ -158,7 +158,7 @@ export async function runScan(): Promise<void> {
                 allResults.push({ keyword: kM.keyword, algorithm: 'kmp', count: kM.indices.length, executionMs: timeElapsed, nodeIndex });
 
                 for (const index of kM.indices) {
-                    nodeHighlights.push({ start: index, end: index + kM.keyword.length, info: { keyword: kM.keyword, algorithm: 'kmp', count: kM.indices.length, executionMs: timeElapsed} });
+                    nodeHighlights.push({ start: index, end: index + kM.keyword.length, info: { keyword: kM.keyword, algorithm: 'kmp', count: kM.indices.length, executionMs: timeElapsed, nodeIndex} });
                 }
             }
         }
@@ -177,7 +177,7 @@ export async function runScan(): Promise<void> {
                 allResults.push({ keyword: bM.keyword, algorithm: 'bm', count: bM.indices.length, executionMs: timeElapsed, nodeIndex });
 
                 for (const index of bM.indices) {
-                    nodeHighlights.push({ start: index, end: index + bM.keyword.length, info: { keyword: bM.keyword, algorithm: 'bm', count: bM.indices.length, executionMs: timeElapsed} });
+                    nodeHighlights.push({ start: index, end: index + bM.keyword.length, info: { keyword: bM.keyword, algorithm: 'bm', count: bM.indices.length, executionMs: timeElapsed, nodeIndex} });
                 }
             }
         }
@@ -196,7 +196,7 @@ export async function runScan(): Promise<void> {
                 allResults.push({keyword: aM.keyword, algorithm: 'aho-corasick', count: aM.indices.length, executionMs: timeElapsed, nodeIndex});
 
                 for (const index of aM.indices){
-                    nodeHighlights.push({start: index, end: index + aM.keyword.length, info: {keyword: aM.keyword, algorithm: 'aho-corasick', count: aM.indices.length, executionMs: timeElapsed}});
+                    nodeHighlights.push({start: index, end: index + aM.keyword.length, info: {keyword: aM.keyword, algorithm: 'aho-corasick', count: aM.indices.length, executionMs: timeElapsed, nodeIndex}});
                 }
             }
         }
@@ -215,7 +215,7 @@ export async function runScan(): Promise<void> {
                 allResults.push({keyword: rK.keyword, algorithm: 'rabin-karp', count: rK.indices.length, executionMs: timeElapsed, nodeIndex});
 
                 for (const index of rK.indices) {
-                    nodeHighlights.push({start: index, end: index + rK.keyword.length, info: {keyword: rK.keyword, algorithm: 'rabin-karp', count: rK.indices.length, executionMs: timeElapsed}});
+                    nodeHighlights.push({start: index, end: index + rK.keyword.length, info: {keyword: rK.keyword, algorithm: 'rabin-karp', count: rK.indices.length, executionMs: timeElapsed, nodeIndex}});
                 }
             }
         }
@@ -234,7 +234,7 @@ export async function runScan(): Promise<void> {
                     stats.levenshtein.hits++;
 
                     allResults.push({keyword: lM.keyword, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed, nodeIndex});
-                    nodeHighlights.push({start: lM.index, end: lM.index + lM.candidate.length, info: {keyword: `${lM.keyword} ≈ ${lM.candidate}`, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed}});
+                    nodeHighlights.push({start: lM.index, end: lM.index + lM.candidate.length, info: {keyword: `${lM.keyword} ≈ ${lM.candidate}`, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed, nodeIndex}});
                 }
             }
         }
@@ -254,7 +254,7 @@ export async function runScan(): Promise<void> {
                 const digitEnd = digitStart + rM.digits.length;
 
                 allResults.push({ keyword: rM.fullMatch, algorithm: 'regex', count: 1, executionMs: timeElapsed, nodeIndex });
-                nodeHighlights.push({ start: digitStart, end: digitEnd, info: { keyword: rM.fullMatch, algorithm: 'regex', count: 1, executionMs: timeElapsed} });
+                nodeHighlights.push({ start: digitStart, end: digitEnd, info: { keyword: rM.fullMatch, algorithm: 'regex', count: 1, executionMs: timeElapsed, nodeIndex} });
             }
         }
 

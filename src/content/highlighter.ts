@@ -3,6 +3,7 @@ export interface HighlightInfo {
   algorithm: string;
   count: number;
   execMs: number;
+  nodeIndex: number;
 }
 
 export interface HighlightMatch {

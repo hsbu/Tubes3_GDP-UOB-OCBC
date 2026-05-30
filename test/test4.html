@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <title>Test 4 - Skip Tags &amp; Edge Cases</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; }
+    h2 { border-bottom: 1px solid #ccc; }
+    .note { background: #d1ecf1; padding: 8px 12px; border-left: 4px solid #17a2b8; margin: 8px 0; font-size: 0.9em; }
+    .warn { background: #f8d7da; padding: 8px 12px; border-left: 4px solid #dc3545; margin: 8px 0; font-size: 0.9em; }
+    pre, code { background: #f4f4f4; padding: 4px 8px; }
+  </style>
+  <!-- Keyword dalam <style> — HARUS diabaikan: slot gacor maxwin -->
+</head>
+<body>
+
+  <h1>Test 4: Skip Tags &amp; Edge Cases</h1>
+  <p>Menguji apakah ekstensi dengan benar <em>mengabaikan</em> keyword di dalam elemen yang seharusnya dilewati,
+    dan tetap <em>mendeteksi</em> keyword di teks yang terlihat pengguna.</p>
+
+  <!-- Keyword dalam komentar HTML — HARUS diabaikan: slot togel jackpot -->
+
+  <h2>1. Keyword di dalam &lt;script&gt; — HARUS diabaikan</h2>
+  <div class="warn">Ekspektasi: TIDAK terdeteksi</div>
+  <script>
+    // Ini adalah kode JavaScript
+    var keyword = "gacor maxwin slot togel jackpot";
+    console.log("scatter wild bonus freespin");
+  </script>
+  <p>Tidak ada keyword di atas yang seharusnya dideteksi (ada di dalam script tag).</p>
+
+  <h2>2. Keyword di dalam &lt;style&gt; inline — HARUS diabaikan</h2>
+  <div class="warn">Ekspektasi: TIDAK terdeteksi</div>
+  <style>
+    /* gacor slot maxwin togel jackpot scatter */
+    .gacor-class { color: red; }
+    .slot-bonus::after { content: "freespin"; }
+  </style>
+  <p>CSS di atas tidak seharusnya dideteksi sebagai keyword.</p>
+
+  <h2>3. Keyword di dalam &lt;code&gt; dan &lt;pre&gt; — HARUS diabaikan</h2>
+  <div class="warn">Ekspektasi: TIDAK terdeteksi</div>
+  <pre>
+    // Contoh kode
+    if (user.plays("slot") || user.wins("jackpot")) {
+      grantBonus("freespin");
+    }
+  </pre>
+  <p>Keyword: <code>gacor</code>, <code>maxwin</code>, <code>scatter</code> di dalam code tag tidak boleh dideteksi.</p>
+
+  <h2>4. Keyword di dalam &lt;textarea&gt; — HARUS diabaikan</h2>
+  <div class="warn">Ekspektasi: TIDAK terdeteksi</div>
+  <textarea rows="3" cols="50">
+    Situs gacor maxwin slot jackpot togel scatter wild bonus freespin
+  </textarea>
+
+  <h2>5. Keyword di atribut HTML — HARUS diabaikan</h2>
+  <div class="warn">Ekspektasi: TIDAK terdeteksi (atribut bukan text node)</div>
+  <img src="placeholder.png" alt="gacor maxwin slot jackpot" title="scatter wild bonus">
+  <a href="#" data-label="togel-online" aria-label="Daftar slot gacor">Link biasa</a>
+  <input type="text" placeholder="Cari slot gacor maxwin..." value="jackpot togel">
+
+  <h2>6. Keyword di teks terlihat — HARUS terdeteksi</h2>
+  <div class="note">Ekspektasi: HARUS terdeteksi</div>
+  <p>Di bawah ini adalah konten yang benar-benar terlihat pengguna dan berisi keyword:</p>
+  <p>Mainkan <strong>slot</strong> dan menangkan <strong>jackpot</strong> besar!</p>
+  <p>Fitur <strong>scatter</strong> dan <strong>wild</strong> tersedia di semua permainan <strong>pragmatic</strong>.</p>
+  <p>Dapatkan <strong>bonus</strong> dan <strong>freespin</strong> setiap hari dari situs <strong>gacor</strong>.</p>
+
+  <h2>7. Teks sangat pendek (&lt; 2 karakter) — HARUS diabaikan</h2>
+  <div class="warn">Ekspektasi: TIDAK terdeteksi (terlalu pendek untuk diproses)</div>
+  <!-- Ini menguji kondisi trimmedValue.length < 2 di dom-walker.ts -->
+  <p><span>S</span><span>L</span><span>O</span><span>T</span></p>
+  <p>Kata di atas dipisah per huruf, masing-masing node hanya 1 karakter.</p>
+
+  <h2>8. Whitespace dan newline di sekitar keyword</h2>
+  <div class="note">Ekspektasi: HARUS terdeteksi meski ada spasi ekstra</div>
+  <p>
+    Selamat datang di situs      gacor      terpercaya.
+  </p>
+  <p>
+    Menangkan
+    maxwin
+    setiap
+    malam.
+  </p>
+
+</body>
+</html>
