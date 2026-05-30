@@ -1,0 +1,1 @@
+chrome.runtime.onMessage.addListener((e,P,t)=>{if(e.type!=="POPUP_SCAN"&&e.type!=="POPUP_CLEAR")return;const u=e.type==="POPUP_SCAN"?"START_SCAN":"CLEAR";return chrome.tabs.query({active:!0,currentWindow:!0},o=>{var n;const r=(n=o[0])==null?void 0:n.id;if(r==null){t({ok:!1,error:"No active tab"});return}chrome.tabs.sendMessage(r,{type:u},t)}),!0});

@@ -1,0 +1,53 @@
+{
+  "manifest_version": 3,
+  "name": "Judol Detector",
+  "version": "1.0",
+  "description": "Detects online gambling content using string matching algorithms.",
+  "permissions": [
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "action": {
+    "default_popup": "src/popup/popup.html",
+    "default_icon": {
+      "16": "images/icon16.png",
+      "48": "images/icon48.png",
+      "128": "images/icon128.png"
+    }
+  },
+  "background": {
+    "service_worker": "service-worker-loader.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "js": [
+        "assets/index.ts-loader-BpuxrQBi.js"
+      ],
+      "matches": [
+        "<all_urls>"
+      ],
+      "css": [
+        "src/content/content.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "resources": [
+        "keywords.txt",
+        "assets/storage-qcY0-yin.js",
+        "assets/index.ts-jsPt2E9w.js"
+      ],
+      "use_dynamic_url": false
+    }
+  ]
+}
