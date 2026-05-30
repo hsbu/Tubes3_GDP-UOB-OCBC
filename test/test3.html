@@ -2,57 +2,50 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Test 3 - Fuzzy / Levenshtein Matching</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; }
-    h2 { border-bottom: 1px solid #ccc; }
-    .note { background: #fff3cd; padding: 8px 12px; border-left: 4px solid #ffc107; margin: 8px 0; font-size: 0.9em; }
-  </style>
+  <title>Test 3</title>
 </head>
 <body>
 
-  <h1>Test 3: Fuzzy Matching &amp; Variasi Typo</h1>
-  <p>Menguji algoritma Levenshtein: apakah ekstensi mendeteksi kata yang mirip tapi tidak persis sama dengan keyword.</p>
+<h2>test fuzzy / typo</h2>
 
-  <h2>1. Typo satu karakter (jarak Levenshtein = 1)</h2>
-  <div class="note">Ekspektasi: HARUS terdeteksi oleh Levenshtein</div>
-  <p>Dapatkan hadiah dari situs <strong>gacoor</strong> terbesar.</p>
-  <p>Menangkan <strong>maxwinn</strong> hari ini.</p>
-  <p>Bermain <strong>sloot</strong> online sekarang.</p>
-  <p>Raih <strong>jakpot</strong> di setiap putaran.</p>
-  <p>Aktifkan fitur <strong>bonuss</strong> eksklusif.</p>
+<p>ini ngetes levenshtein, kata2 di bawah mirip keyword tapi ga persis</p>
 
-  <h2>2. Substitusi satu karakter</h2>
-  <div class="note">Ekspektasi: HARUS terdeteksi oleh Levenshtein</div>
-  <p>Situs <strong>g4cor</strong> pilihan para pemenang.</p>
-  <p>Fitur <strong>sc4tter</strong> membayar berlipat ganda.</p>
-  <p>Spin <strong>fr3espin</strong> tanpa batas.</p>
+<h3>typo 1 huruf (harusnya kedeteksi)</h3>
+<p>main di situs gacoor terbesar</p>
+<p>menangkan maxwinn hari ini</p>
+<p>coba sloot online sekarang</p>
+<p>raih jakpot di setiap putaran</p>
+<p>aktifkan bonuss eksklusif member baru</p>
 
-  <h2>3. Variasi huruf besar / kecil</h2>
-  <div class="note">Ekspektasi: HARUS terdeteksi (case-insensitive)</div>
-  <p>Menangkan hadiah dari <strong>GACOR</strong> setiap malam.</p>
-  <p>Fitur <strong>MaxWin</strong> menunggumu.</p>
-  <p>Daftarkan diri di situs <strong>TOGEL</strong> terpercaya.</p>
-  <p>Raih kemenangan di <strong>sLoT</strong> online.</p>
+<h3>substitusi 1 huruf (harusnya kedeteksi)</h3>
+<p>situs g4cor pilihan pemenang</p>
+<p>fitur sc4tter membayar berlipat</p>
+<p>spin fr3espin tanpa henti</p>
+<p>daftar di t0gel dan menang</p>
 
-  <h2>4. Keyword tertanam dalam kata panjang</h2>
-  <div class="note">Ekspektasi: HARUS terdeteksi karena keyword adalah substring</div>
-  <p>Situs <strong>slotgacor88</strong> hadir untuk kamu.</p>
-  <p>Mainkan <strong>pragmaticplay</strong> dan rasakan kemenangan.</p>
-  <p>Promo <strong>freespin100x</strong> khusus member baru.</p>
-  <p>Daftar di <strong>togel4d</strong> dan menangkan hadiah miliaran.</p>
+<h3>huruf besar kecil campur (harusnya kedeteksi)</h3>
+<p>menang di GACOR setiap malam</p>
+<p>fitur MaxWin menunggumu</p>
+<p>daftar TOGEL terpercaya</p>
+<p>main di sLoT online</p>
+<p>raih JACKPOT sekarang</p>
 
-  <h2>5. Dua typo sekaligus (jarak Levenshtein = 2)</h2>
-  <div class="note">Ekspektasi: tergantung ambang batas Levenshtein yang dipakai ekstensi</div>
-  <p>Kunjungi kami di situs <strong>gacoor99</strong> ternama.</p>
-  <p>Raih <strong>maaxwin</strong> bersama jutaan pemain.</p>
-  <p>Aktifkan <strong>scater</strong> untuk kemenangan penuh.</p>
+<h3>keyword ada di tengah kata panjang (harusnya kedeteksi)</h3>
+<p>daftar di slotgacor88 sekarang</p>
+<p>main pragmaticplay dan menang</p>
+<p>promo freespin100x member baru</p>
+<p>ikut togel4d berhadiah miliaran</p>
 
-  <h2>6. Kata tidak relevan yang mirip (false positive test)</h2>
-  <div class="note">Ekspektasi: TIDAK boleh terdeteksi — kata biasa yang kebetulan mirip</div>
-  <p>Hari ini cuaca <strong>bersinar</strong> cerah di kota kami.</p>
-  <p>Kunjungi toko <strong>boneka</strong> kami yang baru.</p>
-  <p>Berikan <strong>hadiah</strong> terbaik untuk keluargamu.</p>
+<h3>typo 2 huruf (tergantung threshold)</h3>
+<p>kunjungi gacoor99 ternama</p>
+<p>raih maaxwin bersama jutaan pemain</p>
+<p>aktifkan scater penuh kemenangan</p>
+
+<h3>kata biasa yang mirip (harusnya TIDAK kedeteksi)</h3>
+<p>hari ini cuaca bersinar di kota</p>
+<p>beli boneka di toko kami</p>
+<p>hadiah ulang tahun terbaik</p>
+<p>pelajaran matematika kelas 10</p>
 
 </body>
 </html>

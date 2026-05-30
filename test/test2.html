@@ -2,86 +2,68 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <title>Test 2 - Multi Keyword & Struktur DOM</title>
-  <style>
-    body { font-family: Arial, sans-serif; max-width: 800px; margin: 20px auto; }
-    h2 { border-bottom: 1px solid #ccc; }
-    table { border-collapse: collapse; width: 100%; }
-    td, th { border: 1px solid #999; padding: 8px; }
-  </style>
+  <title>Test 2</title>
 </head>
 <body>
 
-  <h1>Test 2: Multi Keyword &amp; Berbagai Struktur DOM</h1>
-  <p>Menguji apakah ekstensi mendeteksi banyak keyword berbeda di berbagai elemen HTML.</p>
+<h2>test keyword di berbagai elemen</h2>
 
-  <h2>1. Keyword dalam link (&lt;a&gt;)</h2>
-  <p>
-    Kunjungi situs <a href="#">slot gacor maxwin</a> terbaru hari ini.
-  </p>
-  <p>
-    Daftar sekarang dan raih <a href="#">jackpot</a> besar!
-  </p>
+<p>ini ngetes apakah keyword kedeteksi di tempat2 yang beda</p>
 
-  <h2>2. Keyword dalam tabel</h2>
-  <table>
-    <thead>
-      <tr>
-        <th>Permainan</th>
-        <th>Provider</th>
-        <th>Bonus</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr>
-        <td>Gates of Olympus</td>
-        <td>Pragmatic Play</td>
-        <td>Freespin x100</td>
-      </tr>
-      <tr>
-        <td>Starlight Princess</td>
-        <td>Pragmatic Play</td>
-        <td>Scatter Wild</td>
-      </tr>
-      <tr>
-        <td>Sweet Bonanza</td>
-        <td>Pragmatic Play</td>
-        <td>Sugar Rush</td>
-      </tr>
-    </tbody>
-  </table>
+<h3>di dalam link</h3>
+<p>kunjungi <a href="#">slot gacor</a> untuk info lebih lanjut</p>
+<p>daftar dan raih <a href="#">jackpot</a> sekarang</p>
 
-  <h2>3. Keyword dalam list (&lt;ul&gt; / &lt;ol&gt;)</h2>
-  <ul>
-    <li>Togel online terpercaya</li>
-    <li>Slot gacor hari ini</li>
-    <li>Mahjong Ways 2 maxwin</li>
-    <li>Aztec Gems bonanza hoki</li>
-  </ul>
+<h3>di dalam tabel</h3>
+<table border="1">
+  <tr>
+    <th>game</th><th>provider</th><th>fitur</th>
+  </tr>
+  <tr>
+    <td>Gates of Olympus</td><td>Pragmatic</td><td>scatter maxwin</td>
+  </tr>
+  <tr>
+    <td>Sweet Bonanza</td><td>Pragmatic</td><td>freespin wild</td>
+  </tr>
+  <tr>
+    <td>Mahjong Ways</td><td>PG Soft</td><td>bonus jackpot</td>
+  </tr>
+</table>
 
-  <h2>4. Keyword dalam elemen nested dalam</h2>
-  <div>
-    <section>
-      <article>
-        <div>
-          <p>
-            Dewa Zeus hadir dengan fitur <strong>wild</strong> dan <em>scatter</em> yang bisa membuat kamu raih <span><b>maxwin</b></span> setiap hari!
-          </p>
-        </div>
-      </article>
-    </section>
-  </div>
+<h3>di list</h3>
+<ul>
+  <li>togel online terpercaya</li>
+  <li>slot gacor hari ini</li>
+  <li>mahjong ways maxwin</li>
+  <li>pragmatic play scatter</li>
+</ul>
 
-  <h2>5. Beberapa keyword sekaligus dalam satu paragraf</h2>
-  <p>
-    Nikmati permainan slot, togel, mahjong, dan pragmatic dengan bonus freespin serta jackpot scatter wild gacor setiap malam. Hoki ada di tanganmu, dewa madu zeus olympus menunggumu!
-  </p>
+<ol>
+  <li>daftar dulu</li>
+  <li>deposit minimal</li>
+  <li>spin slot dan raih jackpot</li>
+</ol>
 
-  <h2>6. Keyword dalam blockquote dan cite</h2>
-  <blockquote>
-    <p>"Raih gates of olympus scatter bonanza maxwin bersama kami!"</p>
-    <cite>— Admin Slot Gacor</cite>
-  </blockquote>
+<h3>nested dalam banget</h3>
+<div>
+  <section>
+    <article>
+      <p>fitur <strong>wild</strong> dan <em>scatter</em> bisa bikin <span><b>maxwin</b></span></p>
+    </article>
+  </section>
+</div>
+
+<h3>banyak keyword dalam satu paragraf</h3>
+<p>slot togel mahjong pragmatic bonus freespin jackpot scatter wild gacor semua ada di sini hoki menanti zeus olympus gates bonanza maxwin</p>
+
+<h3>di blockquote</h3>
+<blockquote>
+  "raih gates of olympus scatter bonanza maxwin bersama kami"
+  <br>— admin gacor
+</blockquote>
+
+<h3>keyword muncul 3x dalam 1 node</h3>
+<p>slot malam ini slot siang ini slot pagi ini semuanya gacor</p>
 
 </body>
 </html>

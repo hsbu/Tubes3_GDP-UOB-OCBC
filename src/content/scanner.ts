@@ -143,6 +143,7 @@ export async function runScan(): Promise<void> {
 
         const exactHits = new Set<string>();
         const nodeHighlights: HighlightMatch[] = [];
+        const exactRanges: { start: number; end: number }[] = [];
 
         // 1. KMP
         if (ALGO_FLAGS.kmp) {
@@ -159,6 +160,7 @@ export async function runScan(): Promise<void> {
 
                 for (const index of kM.indices) {
                     nodeHighlights.push({ start: index, end: index + kM.keyword.length, info: { keyword: kM.keyword, algorithm: 'kmp', count: kM.indices.length, executionMs: timeElapsed, nodeIndex} });
+                    exactRanges.push({ start: index, end: index + kM.keyword.length });
                 }
             }
         }
@@ -178,6 +180,7 @@ export async function runScan(): Promise<void> {
 
                 for (const index of bM.indices) {
                     nodeHighlights.push({ start: index, end: index + bM.keyword.length, info: { keyword: bM.keyword, algorithm: 'bm', count: bM.indices.length, executionMs: timeElapsed, nodeIndex} });
+                    exactRanges.push({ start: index, end: index + bM.keyword.length });
                 }
             }
         }
@@ -197,6 +200,7 @@ export async function runScan(): Promise<void> {
 
                 for (const index of aM.indices){
                     nodeHighlights.push({start: index, end: index + aM.keyword.length, info: {keyword: aM.keyword, algorithm: 'aho-corasick', count: aM.indices.length, executionMs: timeElapsed, nodeIndex}});
+                    exactRanges.push({ start: index, end: index + aM.keyword.length });
                 }
             }
         }
@@ -216,6 +220,7 @@ export async function runScan(): Promise<void> {
 
                 for (const index of rK.indices) {
                     nodeHighlights.push({start: index, end: index + rK.keyword.length, info: {keyword: rK.keyword, algorithm: 'rabin-karp', count: rK.indices.length, executionMs: timeElapsed, nodeIndex}});
+                    exactRanges.push({ start: index, end: index + rK.keyword.length });
                 }
             }
         }
@@ -239,7 +244,7 @@ export async function runScan(): Promise<void> {
             }
         }
 
-        // 6. RegEx — highlight only the digit portion so it doesn't overlap with exact-match keyword highlights
+        // 6. RegEx — highlight full match but split around exact-match regions
         if (ALGO_FLAGS.regex) {
             const timeStart = performance.now();
             const { matches: rxMatches } = regexSearch(text);
@@ -250,11 +255,31 @@ export async function runScan(): Promise<void> {
             for (const rM of rxMatches) {
                 stats.regex.hits++;
 
-                const digitStart = rM.index + rM.word.length;
-                const digitEnd = digitStart + rM.digits.length;
+                const fullStart = rM.index;
+                const fullEnd = rM.index + rM.fullMatch.length;
+                const info = { keyword: rM.fullMatch, algorithm: 'regex', count: 1, executionMs: timeElapsed, nodeIndex };
 
                 allResults.push({ keyword: rM.fullMatch, algorithm: 'regex', count: 1, executionMs: timeElapsed, nodeIndex });
-                nodeHighlights.push({ start: digitStart, end: digitEnd, info: { keyword: rM.fullMatch, algorithm: 'regex', count: 1, executionMs: timeElapsed, nodeIndex} });
+
+                // Split this regex highlight around any exact ranges that fall inside it
+                const blocking = exactRanges
+                    .filter(r => r.start < fullEnd && r.end > fullStart)
+                    .sort((a, b) => a.start - b.start);
+
+                if (blocking.length === 0) {
+                    nodeHighlights.push({ start: fullStart, end: fullEnd, info });
+                } else {
+                    let cur = fullStart;
+                    for (const block of blocking) {
+                        if (block.start > cur) {
+                            nodeHighlights.push({ start: cur, end: block.start, info });
+                        }
+                        cur = block.end;
+                    }
+                    if (cur < fullEnd) {
+                        nodeHighlights.push({ start: cur, end: fullEnd, info });
+                    }
+                }
             }
         }
 
