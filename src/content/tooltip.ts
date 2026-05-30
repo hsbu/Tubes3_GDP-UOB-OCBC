@@ -23,7 +23,7 @@ export function initTooltip(): void {
             let current: Element | null = targetElement;
             
             while (current !== null) {
-                if (current.matches('.judol-highlight')) {
+                if (current.matches('.judol-highlight, .judol-ocr-detected')) {
                     mark = current as HTMLElement;
                     break; 
                 }
@@ -46,14 +46,17 @@ export function initTooltip(): void {
                 keyword: string;
                 algorithm: string;
                 count: number;
-                execMs: number;
+                executionMs?: number;
+                execMs?: number;
             };
+
+            const executionMs = info.executionMs ?? info.execMs ?? 0;
 
             tooltip.innerHTML = `
                 <strong>${info.keyword}</strong>
                 <div>Algorithm: ${info.algorithm.toUpperCase()}</div>
                 <div>Occurrences: ${info.count}</div>
-                <div>Time: ${Number(info.execMs).toFixed(2)}ms</div>
+                <div>Time: ${Number(executionMs).toFixed(2)}ms</div>
             `;
             tooltip.style.display = 'block';
         } catch {

@@ -72,9 +72,13 @@ export function clearBlur(): void {
     const blurredElements = document.querySelectorAll(`.${BLUR_CLASS}[${BLUR_ATTR}]`);
 
     blurredElements.forEach((element) => {
-        element.classList.remove(BLUR_CLASS);
-        element.removeAttribute(BLUR_ATTR);
+        clearElementBlur(element);
     });
+}
+
+export function clearElementBlur(element: Element): void {
+    element.classList.remove(BLUR_CLASS);
+    element.removeAttribute(BLUR_ATTR);
 }
 
 export function blurElement(element: HTMLElement): void {

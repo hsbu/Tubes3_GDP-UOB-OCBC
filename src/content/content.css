@@ -48,3 +48,12 @@
 .judol-blur:hover {
   filter: blur(3px);
 }
+
+.judol-ocr-detected {
+  background: #000;
+  filter: brightness(0) !important;
+  outline: 3px solid #d63031;
+  outline-offset: 2px;
+  border-radius: 4px;
+  transition: filter 0.2s ease;
+}

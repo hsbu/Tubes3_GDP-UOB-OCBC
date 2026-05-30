@@ -4,6 +4,7 @@ import { initScanner, runScan } from './scanner';
 import { initTooltip } from './tooltip';
 import { clearHighlights } from './highlighter';
 import { clearBlur, setBlurVisibility } from './blur';
+import { clearOcrDetections } from './ocr';
 
 
 async function init(): Promise<void> {
@@ -26,6 +27,7 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
     if (message.type === 'CLEAR') {
         clearHighlights();
         clearBlur();
+        clearOcrDetections();
         sendResponse({ ok: true });
     }
 });
@@ -33,6 +35,10 @@ chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
 onStateChange((changes) => {
     if (changes.blurEnabled !== undefined) {
         setBlurVisibility(changes.blurEnabled);
+    }
+
+    if (changes.ocrEnabled === false) {
+        clearOcrDetections();
     }
 });
 

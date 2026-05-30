@@ -4,7 +4,8 @@ export type Algorithm =
   | 'regex'
   | 'levenshtein'
   | 'aho-corasick'
-  | 'rabin-karp';
+  | 'rabin-karp'
+  | 'ocr';
 
 export interface MatchResult {
   keyword: string;
@@ -21,6 +22,7 @@ export interface AlgoStats {
   levenshtein: { hits: number; ms: number };
   ahoCorasick: { hits: number; ms: number };
   rabinKarp: { hits: number; ms: number };
+  ocr: { hits: number; ms: number };
 }
 
 export interface StorageState {
@@ -29,6 +31,7 @@ export interface StorageState {
   algoStats: AlgoStats;
   blurEnabled: boolean;
   bonusEnabled: boolean;
+  ocrEnabled: boolean;
 }
 
 export const DEFAULT_ALGO_STATS: AlgoStats = {
@@ -38,6 +41,7 @@ export const DEFAULT_ALGO_STATS: AlgoStats = {
   levenshtein: { hits: 0, ms: 0 },
   ahoCorasick: { hits: 0, ms: 0 },
   rabinKarp: { hits: 0, ms: 0 },
+  ocr: { hits: 0, ms: 0 },
 };
 
 export const INITIAL_STATE: StorageState = {
@@ -46,4 +50,5 @@ export const INITIAL_STATE: StorageState = {
   algoStats: { ...DEFAULT_ALGO_STATS },
   blurEnabled: false,
   bonusEnabled: false,
+  ocrEnabled: true,
 };

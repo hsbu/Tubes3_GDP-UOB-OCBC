@@ -12,6 +12,7 @@ import type { AhoCorasickNode } from '../algorithms/aho-corasick';
 import { rabinKarpMultiSearch } from '../algorithms/rabin-karp';
 import { rabinKarpSearch, precompute as rabinKarpPrecompute } from '../algorithms/rabin-karp';
 import type { RKPrecomputed } from '../algorithms/rabin-karp';
+import { runOCRScan, clearOcrDetections } from './ocr';
 import { walkTextNodes } from './dom-walker';
 import { clearHighlights, highlightNode } from './highlighter';
 import type { HighlightMatch } from './highlighter';
@@ -127,9 +128,10 @@ export async function runScan(): Promise<void> {
     await setState({ scanStatus: 'scanning', scanResults: [], algoStats: { ...DEFAULT_ALGO_STATS }});
 
     const keywords = getKeywords();
-    const { blurEnabled, bonusEnabled } = await getState();
+    const { blurEnabled, bonusEnabled, ocrEnabled } = await getState();
     clearHighlights();
     clearBlur();
+    clearOcrDetections();
 
     const textNodes = walkTextNodes();
     const allResults: MatchResult[] = [];
@@ -264,6 +266,18 @@ export async function runScan(): Promise<void> {
         if (i % 20 === 0 || i === textNodes.length - 1) {
             await setState({ scanResults: [...allResults], algoStats: { ...stats } });
         }
+
+    }
+
+    // 7. OCR
+    if (ALGO_FLAGS.ocr && ocrEnabled) {
+        const ocrSummary = await runOCRScan(keywords, blurEnabled);
+
+        stats.ocr.hits += ocrSummary.hits;
+        stats.ocr.ms += ocrSummary.ms;
+        allResults.push(...ocrSummary.results);
+
+        await setState({ scanResults: [...allResults], algoStats: { ...stats } });
     }
 
     await setState({ scanStatus: 'done', scanResults: allResults, algoStats: stats });

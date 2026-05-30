@@ -7,4 +7,5 @@ export const ALGO_FLAGS = {
   levenshtein: true,
   ahoCorasick: true,
   rabinKarp: true,
+  ocr: true,
 } as const;
