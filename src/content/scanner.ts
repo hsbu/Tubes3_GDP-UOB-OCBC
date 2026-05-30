@@ -148,7 +148,7 @@ export async function runScan(): Promise<void> {
         if (ALGO_FLAGS.kmp) {
             const timeStart = performance.now();
             const kmpMatches = runKMP(upperText, keywords);
-            
+
             const timeElapsed = performance.now() - timeStart;
             stats.kmp.ms += timeElapsed;
 
@@ -167,7 +167,7 @@ export async function runScan(): Promise<void> {
         if (ALGO_FLAGS.bm) {
             const timeStart = performance.now();
             const bmMatches = runBM(upperText, keywords);
-            
+
             const timeElapsed = performance.now() - timeStart;
             stats.bm.ms += timeElapsed;
 
@@ -182,43 +182,7 @@ export async function runScan(): Promise<void> {
             }
         }
 
-        // 3. RegEx
-        if (ALGO_FLAGS.regex) {
-            const timeStart = performance.now();
-            const { matches: rxMatches } = regexSearch(text);
-            
-            const timeElapsed = performance.now() - timeStart;
-            stats.regex.ms += timeElapsed;
-
-            for (const rM of rxMatches) {
-                exactHits.add(rM.fullMatch.toUpperCase());
-                stats.regex.hits++;
-
-                allResults.push({ keyword: rM.fullMatch, algorithm: 'regex', count: 1, executionMs: timeElapsed, nodeIndex });
-                nodeHighlights.push({ start: rM.index, end: rM.index + rM.fullMatch.length, info: { keyword: rM.fullMatch, algorithm: 'regex', count: 1, executionMs: timeElapsed} });
-            }
-        }
-
-        // 4. Levenshtein
-        if (ALGO_FLAGS.levenshtein){
-            const fuzzyKeywords = keywords.filter((keyword) => !exactHits.has(keyword));
-
-            if (fuzzyKeywords.length > 0){
-                const timeStart = performance.now();
-                const levenshteinMatches = runLevenshtein(text, fuzzyKeywords);
-                const timeElapsed = performance.now() - timeStart;
-                stats.levenshtein.ms += timeElapsed;
-
-                for (const lM of levenshteinMatches){
-                    stats.levenshtein.hits++;
-
-                    allResults.push({keyword: lM.keyword, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed, nodeIndex});
-                    nodeHighlights.push({start: lM.index, end: lM.index + lM.candidate.length, info: {keyword: `${lM.keyword} ≈ ${lM.candidate}`, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed}});
-                }
-            }
-        }
-
-        // 5. Aho-Corasick
+        // 3. Aho-Corasick (exact)
         if (ALGO_FLAGS.ahoCorasick && bonusEnabled) {
             const timeStart = performance.now();
             const ahoMatches = runAhoCorasick(upperText, keywords);
@@ -237,7 +201,7 @@ export async function runScan(): Promise<void> {
             }
         }
 
-        // 6. Rabin-Karp
+        // 4. Rabin-Karp (exact)
         if (ALGO_FLAGS.rabinKarp && bonusEnabled) {
             const timeStart = performance.now();
             const rkMatches = runRabinKarp(upperText, keywords);
@@ -253,6 +217,44 @@ export async function runScan(): Promise<void> {
                 for (const index of rK.indices) {
                     nodeHighlights.push({start: index, end: index + rK.keyword.length, info: {keyword: rK.keyword, algorithm: 'rabin-karp', count: rK.indices.length, executionMs: timeElapsed}});
                 }
+            }
+        }
+
+        // 5. Levenshtein (fuzzy) — priority below exact, above regex
+        if (ALGO_FLAGS.levenshtein){
+            const fuzzyKeywords = keywords.filter((keyword) => !exactHits.has(keyword));
+
+            if (fuzzyKeywords.length > 0){
+                const timeStart = performance.now();
+                const levenshteinMatches = runLevenshtein(text, fuzzyKeywords);
+                const timeElapsed = performance.now() - timeStart;
+                stats.levenshtein.ms += timeElapsed;
+
+                for (const lM of levenshteinMatches){
+                    stats.levenshtein.hits++;
+
+                    allResults.push({keyword: lM.keyword, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed, nodeIndex});
+                    nodeHighlights.push({start: lM.index, end: lM.index + lM.candidate.length, info: {keyword: `${lM.keyword} ≈ ${lM.candidate}`, algorithm: 'levenshtein', count: 1, executionMs: timeElapsed}});
+                }
+            }
+        }
+
+        // 6. RegEx — highlight only the digit portion so it doesn't overlap with exact-match keyword highlights
+        if (ALGO_FLAGS.regex) {
+            const timeStart = performance.now();
+            const { matches: rxMatches } = regexSearch(text);
+
+            const timeElapsed = performance.now() - timeStart;
+            stats.regex.ms += timeElapsed;
+
+            for (const rM of rxMatches) {
+                stats.regex.hits++;
+
+                const digitStart = rM.index + rM.word.length;
+                const digitEnd = digitStart + rM.digits.length;
+
+                allResults.push({ keyword: rM.fullMatch, algorithm: 'regex', count: 1, executionMs: timeElapsed, nodeIndex });
+                nodeHighlights.push({ start: digitStart, end: digitEnd, info: { keyword: rM.fullMatch, algorithm: 'regex', count: 1, executionMs: timeElapsed} });
             }
         }
 

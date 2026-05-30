@@ -1,4 +1,31 @@
-let tooltipElement : HTMLDivElement | null = null;
+import { getState, onStateChange } from '../shared/storage';
+import type { MatchResult, AlgoStats } from '../shared/types';
+import { DEFAULT_ALGO_STATS } from '../shared/types';
+
+let tooltipElement: HTMLDivElement | null = null;
+let cachedResults: MatchResult[] = [];
+let cachedAlgoStats: AlgoStats = { ...DEFAULT_ALGO_STATS };
+
+// Maps MatchResult.algorithm → algoStats key
+const ALGO_STATS_KEY: Record<string, keyof AlgoStats> = {
+    'kmp': 'kmp',
+    'bm': 'bm',
+    'regex': 'regex',
+    'levenshtein': 'levenshtein',
+    'aho-corasick': 'ahoCorasick',
+    'rabin-karp': 'rabinKarp',
+    'ocr': 'ocr',
+};
+
+const ALGO_LABELS: Record<string, string> = {
+    'kmp': 'KMP',
+    'bm': 'Boyer-Moore',
+    'regex': 'Regex',
+    'levenshtein': 'Levenshtein',
+    'aho-corasick': 'Aho-Corasick',
+    'rabin-karp': 'Rabin-Karp',
+    'ocr': 'OCR',
+};
 
 function getTooltip(): HTMLDivElement {
     if (tooltipElement) {
@@ -12,8 +39,33 @@ function getTooltip(): HTMLDivElement {
     return tooltipElement;
 }
 
+function getBaseKeyword(displayKeyword: string): string {
+    const idx = displayKeyword.indexOf(' ≈ ');
+    return idx >= 0 ? displayKeyword.slice(0, idx) : displayKeyword;
+}
+
+function buildAlgoBreakdown(displayKeyword: string): Map<string, number> {
+    const baseKeyword = getBaseKeyword(displayKeyword).toUpperCase();
+    const breakdown = new Map<string, number>();
+    for (const result of cachedResults) {
+        if (result.keyword.toUpperCase() === baseKeyword) {
+            breakdown.set(result.algorithm, (breakdown.get(result.algorithm) ?? 0) + result.count);
+        }
+    }
+    return breakdown;
+}
+
 export function initTooltip(): void {
     const tooltip = getTooltip();
+
+    getState().then(({ scanResults, algoStats }) => {
+        cachedResults = scanResults;
+        cachedAlgoStats = algoStats;
+    });
+    onStateChange((changes) => {
+        if (changes.scanResults) cachedResults = changes.scanResults;
+        if (changes.algoStats) cachedAlgoStats = changes.algoStats;
+    });
 
     document.addEventListener('mouseover', (e) => {
         let mark: HTMLElement | null = null;
@@ -21,21 +73,21 @@ export function initTooltip(): void {
 
         if (targetElement && typeof targetElement.closest === 'function') {
             let current: Element | null = targetElement;
-            
+
             while (current !== null) {
-                if (current.matches('.judol-highlight, .judol-ocr-detected')) {
+                if (current.matches('.judol-highlight, .judol-highlight-fuzzy, .judol-highlight-regex, .judol-ocr-detected')) {
                     mark = current as HTMLElement;
-                    break; 
+                    break;
                 }
                 current = current.parentElement;
             }
         }
-        
+
         if (!mark) {
             tooltip.style.display = 'none';
             return;
         }
-        
+
         const raw = mark.dataset.judolInfo;
         if (!raw) {
             return;
@@ -46,17 +98,26 @@ export function initTooltip(): void {
                 keyword: string;
                 algorithm: string;
                 count: number;
-                executionMs?: number;
-                execMs?: number;
             };
 
-            const executionMs = info.executionMs ?? info.execMs ?? 0;
+            const breakdown = buildAlgoBreakdown(info.keyword);
+            const totalCount = breakdown.size > 0
+                ? [...breakdown.values()].reduce((sum, n) => sum + n, 0)
+                : info.count;
+
+            const algoRows = Object.keys(ALGO_LABELS)
+                .map((algo) => {
+                    const count = breakdown.get(algo) ?? 0;
+                    const statsKey = ALGO_STATS_KEY[algo];
+                    const ms = statsKey ? cachedAlgoStats[statsKey].ms : 0;
+                    return `<div class="judol-algo-row"><span>${ALGO_LABELS[algo]}</span><span>${count}</span><span>${ms.toFixed(2)}ms</span></div>`;
+                })
+                .join('');
 
             tooltip.innerHTML = `
                 <strong>${info.keyword}</strong>
-                <div>Algorithm: ${info.algorithm.toUpperCase()}</div>
-                <div>Occurrences: ${info.count}</div>
-                <div>Time: ${Number(executionMs).toFixed(2)}ms</div>
+                <div class="judol-occurrences">Occurrences: ${totalCount}</div>
+                ${algoRows}
             `;
             tooltip.style.display = 'block';
         } catch {

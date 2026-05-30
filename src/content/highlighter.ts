@@ -12,8 +12,14 @@ export interface HighlightMatch {
 }
 
 
+function highlightClass(algorithm: string): string {
+    if (algorithm === 'regex') return 'judol-highlight-regex';
+    if (algorithm === 'levenshtein') return 'judol-highlight-fuzzy';
+    return 'judol-highlight';
+}
+
 export function clearHighlights(): void {
-    document.querySelectorAll('.judol-highlight').forEach((element) => {
+    document.querySelectorAll('.judol-highlight, .judol-highlight-fuzzy, .judol-highlight-regex').forEach((element) => {
         const parent = element.parentNode;
         if (!parent) {
             return;
@@ -69,7 +75,7 @@ export function highlightNode(textNode: Text, matches: HighlightMatch[]): void {
         }
 
         const mark = document.createElement('mark');
-        mark.className = 'judol-highlight';
+        mark.className = highlightClass(info.algorithm);
         mark.textContent = text.slice(start, end);
         mark.dataset.judolInfo = JSON.stringify(info);
         
