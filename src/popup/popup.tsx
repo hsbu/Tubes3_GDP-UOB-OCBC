@@ -35,8 +35,15 @@ function Popup() {
     await setState({ blurEnabled: !state.blurEnabled });
   }
 
-  const { algoStats: s, scanResults } = state;
+  async function handleBonusToggle() {
+    await setState({ bonusEnabled: !state.bonusEnabled });
+  }
+
+  const { algoStats: s, scanResults, bonusEnabled } = state;
   const total = scanResults.reduce((sum, r) => sum + r.count, 0);
+  const bonusStats = bonusEnabled
+    ? { ahoCorasick: s.ahoCorasick, rabinKarp: s.rabinKarp }
+    : { ahoCorasick: { hits: 0, ms: 0 }, rabinKarp: { hits: 0, ms: 0 } };
 
   return (
     <div>
@@ -57,14 +64,25 @@ function Popup() {
         <AlgoCard name="Boyer-Moore" hits={s.bm.hits} ms={s.bm.ms} />
         <AlgoCard name="Regex" hits={s.regex.hits} ms={s.regex.ms} />
         <AlgoCard name="Levenshtein" hits={s.levenshtein.hits} ms={s.levenshtein.ms} />
-        <AlgoCard name="Aho-Corasick" hits={s.ahoCorasick.hits} ms={s.ahoCorasick.ms} />
-        <AlgoCard name="Rabin-Karp" hits={s.rabinKarp.hits} ms={s.rabinKarp.ms} />
+        <AlgoCard name="Aho-Corasick" hits={bonusStats.ahoCorasick.hits} ms={bonusStats.ahoCorasick.ms} />
+        <AlgoCard name="Rabin-Karp" hits={bonusStats.rabinKarp.hits} ms={bonusStats.rabinKarp.ms} />
       </div>
 
       <KeywordChart results={scanResults} />
 
       <div class="action-row">
-        <BlurToggle enabled={state.blurEnabled} onToggle={handleBlurToggle} />
+        <BlurToggle
+          enabled={bonusEnabled}
+          onToggle={handleBonusToggle}
+          onLabel="Bonus ON"
+          offLabel="Bonus OFF"
+        />
+        <BlurToggle
+          enabled={state.blurEnabled}
+          onToggle={handleBlurToggle}
+          onLabel="Blur ON"
+          offLabel="Blur OFF"
+        />
         <button class="action-btn" onClick={handleClear}>Clear</button>
       </div>
 

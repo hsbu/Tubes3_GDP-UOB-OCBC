@@ -127,7 +127,7 @@ export async function runScan(): Promise<void> {
     await setState({ scanStatus: 'scanning', scanResults: [], algoStats: { ...DEFAULT_ALGO_STATS }});
 
     const keywords = getKeywords();
-    const { blurEnabled } = await getState();
+    const { blurEnabled, bonusEnabled } = await getState();
     clearHighlights();
     clearBlur();
 
@@ -217,7 +217,7 @@ export async function runScan(): Promise<void> {
         }
 
         // 5. Aho-Corasick
-        if (ALGO_FLAGS.ahoCorasick) {
+        if (ALGO_FLAGS.ahoCorasick && bonusEnabled) {
             const timeStart = performance.now();
             const ahoMatches = runAhoCorasick(upperText, keywords);
             const timeElapsed = performance.now() - timeStart;
@@ -236,7 +236,7 @@ export async function runScan(): Promise<void> {
         }
 
         // 6. Rabin-Karp
-        if (ALGO_FLAGS.rabinKarp) {
+        if (ALGO_FLAGS.rabinKarp && bonusEnabled) {
             const timeStart = performance.now();
             const rkMatches = runRabinKarp(upperText, keywords);
             const timeElapsed = performance.now() - timeStart;

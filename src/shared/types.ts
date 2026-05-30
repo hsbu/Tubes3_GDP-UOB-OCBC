@@ -28,6 +28,7 @@ export interface StorageState {
   scanResults: MatchResult[];
   algoStats: AlgoStats;
   blurEnabled: boolean;
+  bonusEnabled: boolean;
 }
 
 export const DEFAULT_ALGO_STATS: AlgoStats = {
@@ -44,4 +45,5 @@ export const INITIAL_STATE: StorageState = {
   scanResults: [],
   algoStats: { ...DEFAULT_ALGO_STATS },
   blurEnabled: false,
+  bonusEnabled: false,
 };
